@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pengingat Tugas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="container header-inner">
+      <div>
+        <h1>Pengingat Tugas Kuliah</h1>
+        <p class="muted small" id="today-label"></p>
+      </div>
+      <nav class="tabs" aria-label="Menu utama">
+        <button class="tab is-active" type="button" data-view="beranda">Beranda</button>
+        <button class="tab" type="button" data-view="tugas">Tugas</button>
+        <button class="tab" type="button" data-view="matkul">Mata Kuliah</button>
+        <button class="tab" type="button" data-view="data">Pengaturan</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="alerts" id="alerts" hidden aria-live="polite"></section>
+
+    <section class="view" id="view-beranda">
+      <div class="stats">
+        <article class="stat">
+          <span class="stat-value" id="stat-aktif">0</span>
+          <span class="stat-label">Tugas belum selesai</span>
+        </article>
+        <article class="stat stat-danger">
+          <span class="stat-value" id="stat-terlambat">0</span>
+          <span class="stat-label">Terlambat</span>
+        </article>
+        <article class="stat stat-warn">
+          <span class="stat-value" id="stat-minggu">0</span>
+          <span class="stat-label">Batas waktu 7 hari ke depan</span>
+        </article>
+        <article class="stat stat-ok">
+          <span class="stat-value" id="stat-selesai">0</span>
+          <span class="stat-label">Sudah selesai</span>
+        </article>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Kerjakan lebih dulu</h2>
+          <button class="btn btn-primary" type="button" data-action="new-task">+ Tambah tugas</button>
+        </div>
+        <ul class="task-list" id="upcoming"></ul>
+      </div>
+    </section>
+
+    <section class="view" id="view-tugas" hidden>
+      <div class="toolbar">
+        <button class="btn btn-primary" type="button" data-action="new-task">+ Tambah tugas</button>
+        <input id="search" type="search" placeholder="Cari judul, catatan, atau mata kuliah" aria-label="Cari tugas">
+        <select id="filter-status" aria-label="Filter status">
+          <option value="aktif">Belum selesai</option>
+          <option value="semua">Semua status</option>
+          <option value="belum">Belum dikerjakan</option>
+          <option value="proses">Sedang dikerjakan</option>
+          <option value="terlambat">Terlambat</option>
+          <option value="selesai">Selesai</option>
+        </select>
+        <select id="filter-matkul" aria-label="Filter mata kuliah"></select>
+      </div>
+      <ul class="task-list" id="task-list"></ul>
+    </section>
+
+    <section class="view" id="view-matkul" hidden>
+      <ul class="course-list" id="course-list"></ul>
+
+      <div class="card">
+        <h2>Tambah mata kuliah</h2>
+        <form class="form-grid" id="course-form">
+          <label>Kode mata kuliah
+            <input name="kode" placeholder="124210162">
+          </label>
+          <label>Nama mata kuliah
+            <input name="nama" required>
+          </label>
+          <label>Dosen
+            <input name="dosen">
+          </label>
+          <label>SKS
+            <input name="sks" type="number" min="0" max="10" value="2">
+          </label>
+          <label>Kelas
+            <input name="kelas" placeholder="SI-A">
+          </label>
+          <div class="form-actions span-2">
+            <button class="btn btn-primary" type="submit">Simpan mata kuliah</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="view" id="view-data" hidden>
+      <div class="card">
+        <h2>Notifikasi</h2>
+        <p class="muted">Pengingat selalu muncul di halaman ini. Notifikasi di layar perangkat hanya muncul kalau halaman ini masih terbuka.</p>
+        <p class="small" id="notif-status"></p>
+        <button class="btn" type="button" id="notif-button" data-action="enable-notif">Nyalakan notifikasi</button>
+      </div>
+
+      <div class="card">
+        <h2>Cadangan data</h2>
+        <p class="muted">Data disimpan di browser ini. Simpan cadangan secara berkala supaya data tidak hilang kalau browser dibersihkan.</p>
+        <div class="row-actions">
+          <button class="btn" type="button" data-action="export">Simpan cadangan ke file</button>
+          <button class="btn" type="button" data-action="import">Pulihkan dari file cadangan</button>
+          <input id="import-file" type="file" accept="application/json,.json" hidden>
+          <button class="btn btn-danger" type="button" data-action="reset">Kembalikan data ke awal</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="task-dialog">
+    <h2 id="task-dialog-title">Tambah tugas</h2>
+    <form class="form-grid" id="task-form">
+      <input type="hidden" name="taskId">
+      <label class="span-2">Judul tugas
+        <input name="title" required maxlength="120">
+      </label>
+      <label>Mata kuliah
+        <select name="courseId" id="task-matkul" required></select>
+      </label>
+      <label>Batas waktu
+        <input name="deadline" type="datetime-local" required>
+      </label>
+      <label>Seberapa penting
+        <select name="priority">
+          <option value="tinggi">Sangat penting</option>
+          <option value="sedang" selected>Cukup penting</option>
+          <option value="rendah">Kurang penting</option>
+        </select>
+      </label>
+      <label>Status
+        <select name="status">
+          <option value="belum">Belum dikerjakan</option>
+          <option value="proses">Sedang dikerjakan</option>
+          <option value="selesai">Selesai</option>
+        </select>
+      </label>
+      <label class="span-2">Ingatkan saya
+        <select name="remindMinutes">
+          <option value="">Tidak perlu diingatkan</option>
+          <option value="60">1 jam sebelum batas waktu</option>
+          <option value="1440">1 hari sebelum batas waktu</option>
+          <option value="4320">3 hari sebelum batas waktu</option>
+          <option value="10080">1 minggu sebelum batas waktu</option>
+        </select>
+      </label>
+      <label class="span-2">Catatan
+        <textarea name="notes" rows="3"></textarea>
+      </label>
+      <div class="form-actions span-2">
+        <button class="btn" type="button" data-action="close-dialog">Batal</button>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
